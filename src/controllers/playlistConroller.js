@@ -1,6 +1,6 @@
 const User = require('../modals/User');
 const Song = require('../modals/Song');
-const Playlist = require('../modals/playlist');
+const Playlist = require('../modals/Playlist');
 const Favorite = require('../modals/Favorite');
 
 //get all playlists

@@ -1,5 +1,5 @@
 const Admin = require('../modals/Admin');
-const Playlist = require('../modals/playlist');
+const Playlist = require('../modals/Playlist');
 const Favorite = require('../modals/Favorite');
 const Song = require('../modals/Song');
 const { uploadImage, uploadMusic } = require('../service/ImageKitService')
