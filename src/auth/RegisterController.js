@@ -7,7 +7,7 @@ const RegisterController = async (req, res) => {
     try {
         const { username, email, name, password, role, phone } = req.body || {};
 
-        if (!req.body || !username || !email || !password || !role) {
+        if (!req.body || !username || !name || !email || !password || !role) {
             return res.status(400).json({ message: 'Missing required fields: username, email, password, and role are required.' });
         }
 
@@ -25,14 +25,14 @@ const RegisterController = async (req, res) => {
         let savedUser;
         if (role === 'admin') {
             const admindata = new Admin({
-                username, email, password, phone
+                username, email, password, phone, name
 
             });
             savedUser = await admindata.save();
         }
         else if (role === 'user') {
             const userData = new User({
-                username, email, password, phone
+                username, email, password, phone, name
             });
             savedUser = await userData.save();
         }
@@ -44,8 +44,8 @@ const RegisterController = async (req, res) => {
         delete result.password;
 
         res.status(201).send({
-           result,
-           role
+            result,
+            role
         })
 
     } catch (error) {

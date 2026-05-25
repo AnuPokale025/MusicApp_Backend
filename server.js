@@ -7,7 +7,12 @@ const jsonWebToken = require('jsonwebtoken');
 const app = express();
 const routes = require('./src/route/routes');
 const connectDb = require('./src/dbconnection/db');
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', routes);
