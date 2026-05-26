@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const Admin = require("../modals/Admin");
 const User = require("../modals/User");
 const Jwt = require("jsonwebtoken");
@@ -6,9 +5,13 @@ const bcrypt = require("bcrypt");
 
 const LoginController = async (req, res) => {
   try {
+
     const { emailOrUsername, password } = req.body || {};
 
-    // Validation
+    console.log("Login Body:", req.body);
+
+    // ================= Validation =================
+
     if (!emailOrUsername || !password) {
       return res.status(400).send({
         success: false,
@@ -16,7 +19,8 @@ const LoginController = async (req, res) => {
       });
     }
 
-    // Find Admin
+    // ================= Find Admin =================
+
     let account = await Admin.findOne({
       $or: [
         { email: emailOrUsername },
@@ -26,7 +30,8 @@ const LoginController = async (req, res) => {
 
     let role = "admin";
 
-    // If admin not found then find user
+    // ================= Find User =================
+
     if (!account) {
       account = await User.findOne({
         $or: [
@@ -38,7 +43,8 @@ const LoginController = async (req, res) => {
       role = "user";
     }
 
-    // Account not found
+    // ================= Account Not Found =================
+
     if (!account) {
       return res.status(404).send({
         success: false,
@@ -46,29 +52,50 @@ const LoginController = async (req, res) => {
       });
     }
 
-    // Compare password
+    // ================= Check Password Exists =================
+
+    if (!account.password) {
+      return res.status(500).send({
+        success: false,
+        message: "Password not found in database",
+      });
+    }
+
+    // ================= Compare Password =================
+
     const match = await bcrypt.compare(
       password,
       account.password
     );
 
-    // Invalid password
     if (!match) {
-      return res.status(400).send({
+      return res.status(401).send({
         success: false,
         message: "Invalid password",
       });
     }
 
-    // Remove password from response
-    const accountdata = account.toObject();
-    delete accountdata.password;
+    // ================= Remove Password =================
 
-    // Generate token
+    const accountData = account.toObject();
+
+    delete accountData.password;
+
+    // ================= Check Secret Key =================
+
+    if (!process.env.SECRET_KEY) {
+      return res.status(500).send({
+        success: false,
+        message: "SECRET_KEY is missing in environment variables",
+      });
+    }
+
+    // ================= Generate JWT =================
+
     const token = Jwt.sign(
       {
-        account: accountdata,
-        role,
+        id: accountData._id,
+        role: role,
       },
       process.env.SECRET_KEY,
       {
@@ -76,20 +103,23 @@ const LoginController = async (req, res) => {
       }
     );
 
-    // Success response
+    // ================= Success =================
+
     return res.status(200).send({
       success: true,
       message: "Login successful",
-      account: accountdata,
+      account: accountData,
       role,
       token,
     });
+
   } catch (error) {
-    console.error(error);
+
+    console.log("LOGIN ERROR:", error);
 
     return res.status(500).send({
       success: false,
-      message: "Internal server error",
+      message: error.message || "Internal server error",
     });
   }
 };
