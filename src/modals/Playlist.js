@@ -5,7 +5,7 @@ const playlistSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  songs: {
+  songid: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Song'
   },

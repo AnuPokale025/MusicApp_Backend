@@ -1,5 +1,15 @@
 const Imagekit = require('imagekit');
 
+// Validate required environment variables
+if (!process.env.IMAGEKIT_PUBLIC_KEY || !process.env.IMAGEKIT_PRIVATE_KEY || !process.env.IMAGEKIT_URL_ENDPOINT) {
+    throw new Error(
+        'Missing required ImageKit environment variables. Please set:\n' +
+        '- IMAGEKIT_PUBLIC_KEY\n' +
+        '- IMAGEKIT_PRIVATE_KEY\n' +
+        '- IMAGEKIT_URL_ENDPOINT'
+    );
+}
+
 const imagekit = new Imagekit({
     publicKey : process.env.IMAGEKIT_PUBLIC_KEY,
     privateKey : process.env.IMAGEKIT_PRIVATE_KEY,

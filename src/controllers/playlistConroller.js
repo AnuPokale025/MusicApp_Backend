@@ -37,10 +37,10 @@ const getplaylistById = async (req, res) => {
 // create playlist
 const createPlaylist = async (req, res) => {
     try {
-        const { adminId, userId, id } = req.params;
+        const { adminId, userId,id,  songId } = req.params;
         const ownerAdminId = adminId || (id && req.path.includes('/admin/') ? id : undefined);
         const ownerUserId = userId || (id && req.path.includes('/user/') ? id : undefined);
-        const { name, songs } = req.body;
+        const { name} = req.body;
 
         // validation
         if (!name) {
@@ -59,7 +59,8 @@ const createPlaylist = async (req, res) => {
         // playlist object
         const playlistData = {
             name,
-            songs
+            songId : songId
+          
         };
 
         // assign owner
