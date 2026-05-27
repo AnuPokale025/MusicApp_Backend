@@ -2,6 +2,7 @@ const User = require('../modals/User');
 const Song = require('../modals/Song');
 const Playlist = require('../modals/Playlist');
 const Favorite = require('../modals/Favorite');
+const {uploadImage} = require ('../service/ImageKitService')
 
 //get all playlists
 const getAllPlaylist = async (req, res) => {
@@ -37,10 +38,10 @@ const getplaylistById = async (req, res) => {
 // create playlist
 const createPlaylist = async (req, res) => {
     try {
-        const { adminId, userId,id,  songId } = req.params;
-        const ownerAdminId = adminId || (id && req.path.includes('/admin/') ? id : undefined);
+        const { artistId, userId,id,  songId } = req.params;
+        const ownerArtistId = artistId || (id && req.path.includes('/artist/') ? id : undefined);
         const ownerUserId = userId || (id && req.path.includes('/user/') ? id : undefined);
-        const { name} = req.body;
+        const {name} = req.body;
 
         // validation
         if (!name) {
@@ -50,27 +51,33 @@ const createPlaylist = async (req, res) => {
         }
 
         // only one id allowed
-        if ((ownerAdminId && ownerUserId) || (!ownerAdminId && !ownerUserId)) {
+        if ((ownerArtistId && ownerUserId) || (!ownerArtistId && !ownerUserId)) {
             return res.status(400).send({
                 message: "Provide either adminId or userId"
             });
         }
+        if(!req.files || !req.files.image){
+            return res.status(400).send({message: "image feild is required"})
+        }
+
+                const imageupload = await uploadImage(req.files.image[0]);
 
         // playlist object
         const playlistData = {
             name,
-            songId : songId
-          
+            songId : songId,
+            image : imageupload.url
         };
 
         // assign owner
-        if (ownerAdminId) {
-            playlistData.adminId = ownerAdminId;
+        if (ownerArtistId) {
+            playlistData.artistId = ownerArtistId;
         }
 
         if (ownerUserId) {
             playlistData.userId = ownerUserId;
         }
+
 
         // save playlist
         const playlist = new Playlist(playlistData);
@@ -96,16 +103,16 @@ const createPlaylist = async (req, res) => {
 
 const getPlaylistsByOwner = async (req, res) => {
     try {
-        const { adminId, userId } = req.params;
+        const { artistId, userId } = req.params;
 
-        if (!adminId && !userId) {
+        if (!artistId && !userId) {
             return res.status(400).send({
-                message: 'Provide either adminId or userId'
+                message: 'Provide either artistId or userId'
             });
         }
 
         const filter = {};
-        if (adminId) filter.adminId = adminId;
+        if (artistId) filter.artistId = artistId;
         if (userId) filter.userId = userId;
 
         const playlists = await Playlist.find(filter);

@@ -9,16 +9,19 @@ const playlistSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Song'
   },
-    userId: {  
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  adminId:{
-    type : mongoose.Schema.Types.ObjectId,
-    ref: 'Admin'
+  artistId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Artist'
+  },
+  image: {
+    type: String,
   }
-});    
+});
 
 module.exports =
-    mongoose.models.Playlist ||
-    mongoose.model("Playlist", playlistSchema);
+  mongoose.models.Playlist ||
+  mongoose.model("Playlist", playlistSchema);

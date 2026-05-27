@@ -1,5 +1,5 @@
 const User = require('../modals/User');
-const Admin = require('../modals/Admin');
+const Artist = require('../modals/Artist');
 const {generateOTP,sendOTP} = require ('../service/OTPService')
 
 const ForgetPassword = async(req, res)=>{
@@ -12,7 +12,7 @@ const ForgetPassword = async(req, res)=>{
 
         if(!user){
             user = await Admin.findOne({email})
-            role = 'Admin'
+            role = 'Artist'
         }
         if(!user){
             return res.status(400).send({ message : "Email is not registered"})

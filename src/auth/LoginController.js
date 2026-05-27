@@ -1,4 +1,4 @@
-const Admin = require("../modals/Admin");
+const Artist = require("../modals/Artist");
 const User = require("../modals/User");
 const Jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -8,7 +8,7 @@ const LoginController = async (req, res) => {
 
     const { emailOrUsername, password } = req.body || {};
 
-    console.log("Login Body:", req.body);
+    // console.log("Login Body:", req.body);
 
     // ================= Validation =================
 
@@ -21,14 +21,14 @@ const LoginController = async (req, res) => {
 
     // ================= Find Admin =================
 
-    let account = await Admin.findOne({
+    let account = await Artist.findOne({
       $or: [
         { email: emailOrUsername },
         { username: emailOrUsername },
       ],
     });
 
-    let role = "admin";
+    let role = "artist";
 
     // ================= Find User =================
 

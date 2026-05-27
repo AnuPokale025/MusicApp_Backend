@@ -24,9 +24,9 @@ const songSchema = new mongoose.Schema({
     audio:{
         type: String,
     },
-    adminId:{
+    artistId:{
     type : mongoose.Schema.Types.ObjectId,
-    ref: 'Admin'
+    ref: 'Artist'
     }
    
 });

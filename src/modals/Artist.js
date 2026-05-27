@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const adminSchema = new mongoose.Schema({
+const artistSchema = new mongoose.Schema({
     username: {
         type: String,
         
@@ -20,13 +20,16 @@ const adminSchema = new mongoose.Schema({
     },
     phone:{
         type: String,
+    },
+    image: {
+        type : String,
     }
 },{timestamps:true});
 
-adminSchema.pre('save',async function(){
+artistSchema.pre('save',async function(){
     if(!this.isModified('password')) return;
     this.password = await bcrypt.hash(this.password, 10);
 })
- 
 
-module.exports = mongoose.model('Admin', adminSchema);
+
+module.exports = mongoose.model('Artist', artistSchema);

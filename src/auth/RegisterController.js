@@ -1,5 +1,5 @@
 const User = require('../modals/User');
-const Admin = require('../modals/Admin');
+const Artist = require('../modals/Artist');
 const bcrypt = require('bcrypt');
 
 const RegisterController = async (req, res) => {
@@ -23,12 +23,12 @@ const RegisterController = async (req, res) => {
         }
 
         let savedUser;
-        if (role === 'admin') {
-            const admindata = new Admin({
+        if (role === 'artist') {
+            const artistdata = new Artist({
                 username, email, password, phone, name
 
             });
-            savedUser = await admindata.save();
+            savedUser = await artistdata.save();
         }
         else if (role === 'user') {
             const userData = new User({

@@ -1,4 +1,4 @@
-const Admin = require('../modals/Admin');
+const Admin = require('../modals/Artist');
 const Playlist = require('../modals/Playlist');
 const Favorite = require('../modals/Favorite');
 const Song = require('../modals/Song');

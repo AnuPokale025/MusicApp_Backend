@@ -1,5 +1,5 @@
 const User = require("../modals/User");
-const Admin = require("../modals/Admin");
+const Artist = require("../modals/Artist");
 
 const { verifyOTP } = require("../service/OTPService");
 const RegisterController = require("./RegisterController");
@@ -18,7 +18,7 @@ const Resetpassword = async (req, res) => {
 
     if(!user){
         let user = await Admin.findOne({email})
-        let role = 'Admin'
+        let role = 'Artist'
     }
 
     if(!user){
