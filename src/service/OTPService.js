@@ -1,43 +1,115 @@
-const { v4: uuid } = require('uuid');
+// src/service/OTPService.js
 
+const otpStore = new Map();
 
-const otpstore = new Map();
+const OTP_EXPIRATION =
+    Number(process.env.OTP_EXPIRATION) || 5 * 60 * 1000; // 5 minutes
 
-
+/**
+ * Generate 6-digit OTP
+ */
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+/**
+ * Save and send OTP
+ */
+const sendOTP = async (email) => {
+    try {
+        if (!email) {
+            throw new Error("Email is required");
+        }
 
-const sendOTP = async (email, otp) => {
-    console.log(`OTP for ${email} : ${otp}`);
+        const otp = generateOTP();
 
-    otpstore.set(email, {
-        otp,
-        expiresAt: Date.now() + (parseInt(process.env.OTP_EXPIRATION) || 300000)
-    });
+        otpStore.set(email, {
+            otp,
+            expiresAt: Date.now() + OTP_EXPIRATION,
+        });
 
-    return true;
+        // Integrate Nodemailer here
+        console.log(`OTP for ${email}: ${otp}`);
 
-}
+        return {
+            success: true,
+            message: "OTP sent successfully",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message,
+        };
+    }
+};
 
+/**
+ * Verify OTP
+ */
 const verifyOTP = async (email, otp) => {
-    const stored = otpstore.get(email);
+    try {
+        if (!email || !otp) {
+            return {
+                valid: false,
+                message: "Email and OTP are required",
+            };
+        }
 
-    if (!stored) {
-        return { valid: false, message: "OTP is not found or expired" }
+        const storedOTP = otpStore.get(email);
+
+        if (!storedOTP) {
+            return {
+                valid: false,
+                message: "OTP not found or expired",
+            };
+        }
+
+        if (Date.now() > storedOTP.expiresAt) {
+            otpStore.delete(email);
+
+            return {
+                valid: false,
+                message: "OTP expired",
+            };
+        }
+
+        if (storedOTP.otp !== otp) {
+            return {
+                valid: false,
+                message: "Invalid OTP",
+            };
+        }
+
+        // OTP verified successfully
+        otpStore.delete(email);
+
+        return {
+            valid: true,
+            message: "OTP verified successfully",
+        };
+    } catch (error) {
+        return {
+            valid: false,
+            message: error.message,
+        };
     }
+};
 
-    if (Date.now() > stored.expiresAt) {
-        otpstore.delete(email)
-        return { valid: false, message: "OTP is expired" }
-    } 
+/**
+ * Remove expired OTPs every minute
+ */
+setInterval(() => {
+    const now = Date.now();
 
-    
-    if (stored.otp !== otp) {
-        return { valid: false, message: "Invalid OTP" }
+    for (const [email, data] of otpStore.entries()) {
+        if (now > data.expiresAt) {
+            otpStore.delete(email);
+        }
     }
-    otpstore.delete(email);
-    return { valid: true, message: "OTP verified succesfully" }
-}
-module.exports = { generateOTP, sendOTP, verifyOTP }
+}, 60 * 1000);
+
+module.exports = {
+    generateOTP,
+    sendOTP,
+    verifyOTP,
+};

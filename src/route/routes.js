@@ -11,6 +11,7 @@ const express = require('express');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
+const verifytoken = require('../auth/VerifyToken')
 
 
 ///Auth routes
@@ -21,9 +22,9 @@ router.post('/reset-password', ResetPasswordController.reset)
 
 
 // favorite routes
-router.get('/favorites', FavoriteController.getAllFavorite);
-router.post('/favorites/:userId/:playlistId/:songId', FavoriteController.addtoFavorite);
-router.delete('/favorites/:favoriteId', FavoriteController.removeFromFavorite);
+router.get('/favorites',verifytoken, FavoriteController.getAllFavorite);
+router.post('/favorites/:userId/:playlistId/:songId',verifytoken, FavoriteController.addtoFavorite);
+router.delete('/favorites/:favoriteId',verifytoken, FavoriteController.removeFromFavorite);
 
 
 //playlist routes

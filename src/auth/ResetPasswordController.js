@@ -1,34 +1,40 @@
 const User = require("../modals/User");
 const Artist = require("../modals/Artist");
+const bcrypt = require("bcrypt");
 
 const { verifyOTP } = require("../service/OTPService");
-const RegisterController = require("./RegisterController");
 
-const Resetpassword = async (req, res) => {
+const ResetPassword =  async(req, res)=>{
+  try{
+    const {email,otp, newPassword} = req.body;
 
-    const {email, otp, newPassword}= req.body;
-
-    const result  = await verifyOTP(email.otp);
-    if(!res.valid){
-        return res.status(400).send({message: result.message})
-    };
+    const result = await verifyOTP(email, otp);
+    if(!result.valid){
+      return res.status(400).send({message : result.message})
+    }
 
     let user = await User.findOne({email})
-    let role = 'User'
+    let Model = User;
 
     if(!user){
-        let user = await Admin.findOne({email})
-        let role = 'Artist'
+      user = await Artist.findOne({email})
+      Model = Artist;
     }
 
     if(!user){
-        return res.status(400).send({message: "User not Found"})
+      return res.status(400).send({message :" User not found" })
     }
     
     user.password = newPassword;
     await user.save();
-    res.status(200).send({message : "password reset successfully"})
+    res.send({ message : "password reset succefully"})
 
-}
 
-module.exports= {reset: Resetpassword}
+  }catch(error){
+    return res.status(500).send({result : "Something went wrong"})
+  }
+};
+
+module.exports = {
+  reset: ResetPassword,
+};
