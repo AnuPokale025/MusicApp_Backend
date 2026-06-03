@@ -17,14 +17,21 @@ const verifytoken = require('../auth/VerifyToken')
 ///Auth routes
 router.post('/register', RegisterController.register);
 router.post('/login', LoginController.login);
-router.post('/forget-password', ForgetPasswordController.forget);
-router.post('/reset-password', ResetPasswordController.reset)
+router.post('/forget', ForgetPasswordController.forget);
+router.post('/reset', ResetPasswordController.reset)
+
+//Artist routes
+router.get('/artists', ArtistController.getAllArtist);
+router.get('/artists/:artistId', ArtistController.getArtistBYId);
+router.post('/artists', upload.fields([
+    { name: 'image', maxCount: 1 }
+]), ArtistController.addArtist);
 
 
 // favorite routes
-router.get('/favorites',verifytoken, FavoriteController.getAllFavorite);
-router.post('/favorites/:userId/:playlistId/:songId',verifytoken, FavoriteController.addtoFavorite);
-router.delete('/favorites/:favoriteId',verifytoken, FavoriteController.removeFromFavorite);
+router.get('/favorites', verifytoken, FavoriteController.getAllFavorite);
+router.post('/favorites/:userId/:playlistId/:songId', verifytoken, FavoriteController.addtoFavorite);
+router.delete('/favorites/:favoriteId', verifytoken, FavoriteController.removeFromFavorite);
 
 
 //playlist routes
@@ -45,10 +52,10 @@ router.delete('/playlists/:playlistId', PlaylistController.deletePlaylist);
 router.get('/song', SongController.getAllSong);
 router.get('/song/:songId', SongController.getSongById);
 router.post('/song/:aristId', upload.fields([
-    { name: 'music', maxCount: 1 },
     { name: 'image', maxCount: 1 }
 ]), SongController.createSong);
 router.delete('/song/:songId', SongController.deleteSong);
+router.get('/search', SongController.searchSong)
 
 
 module.exports = router;

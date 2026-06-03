@@ -22,8 +22,9 @@ const artistSchema = new mongoose.Schema({
         type: String,
     },
     image: {
-        type : String,
+        type: String,
     }
+    
 },{timestamps:true});
 
 artistSchema.pre('save',async function(){

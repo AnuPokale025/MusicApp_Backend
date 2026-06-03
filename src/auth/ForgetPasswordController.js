@@ -1,33 +1,53 @@
-const User = require('../modals/User');
-const Artist = require('../modals/Artist');
-const {generateOTP,sendOTP} = require ('../service/OTPService')
+const User = require("../modals/User");
+const Artist = require("../modals/Artist");
+const { sendOTP } = require("../service/OTPService");
 
-const ForgetPassword = async(req, res)=>{
+const ForgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
 
-    try{
-        const {email} = req.body;
+        let user = await User.findOne({ email });
+        let role = "User";
 
-        let user = await User.findOne({email})
-        let role = 'User'
-
-        if(!user){
-            user = await Admin.findOne({email})
-            role = 'Artist'
-        }
-        if(!user){
-            return res.status(400).send({ message : "Email is not registered"})
+        if (!user) {
+            user = await Artist.findOne({ email });
+            role = "Artist";
         }
 
-        const otp = generateOTP();
-        await sendOTP(email, otp);
-        // console.log(sendOTP);
-        
-        res.status(200).send({message : "OTP send succesfully", email})
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is not registered",
+            });
+        }
 
+        const result = await sendOTP(email);
 
-    }catch(err){
-        res.status(500).send({message: "Internal Server error"})
+        if (!result.success) {
+            return res.status(500).json({
+                success: false,
+                message: result.message,
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent successfully",
+            email,
+            role,
+        });
+
+    } catch (err) {
+        console.error("Forget Password Error:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
     }
-    
-}
-module.exports= {forget: ForgetPassword}
+};
+
+module.exports = {
+
+    forget: ForgetPassword,
+};

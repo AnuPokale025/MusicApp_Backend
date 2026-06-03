@@ -108,4 +108,35 @@ const deleteSong = async (req, res) => {
         res.status(500).send({ message: 'Internal Server error' });
     }
 }
-module.exports = { getAllSong, getSongById, createSong, deleteSong };
+const searchSong = async (req, res) => {
+    try {
+        const { query } = req.query;
+
+        if (!query) {
+            return res.status(400).send({
+                message: "Search query is required"
+            });
+        }
+
+        const songs = await Song.find({
+            $or: [
+                { title: { $regex: query, $options: "i" } },
+                { artist: { $regex: query, $options: "i" } },
+                { album: { $regex: query, $options: "i" } }
+            ]
+        });
+
+        return res.status(200).send({
+            message: "Search results",
+            data: songs
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({
+            message: "Internal Server Error"
+        });
+    }
+};
+
+module.exports = { getAllSong, getSongById, createSong, deleteSong, searchSong };
