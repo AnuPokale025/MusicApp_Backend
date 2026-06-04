@@ -21,7 +21,8 @@ const getAllFavorite = async (req, res) => {
             filter.songId = songId;
         }
 
-        const favorites = await Favorite.find(filter);
+        const favorites = await Favorite.find(filter).populate('playlistId', 'name')
+        .populate('songId', 'title artist image audio releaseDate');
         
         res.status(200).send({
             message: 'Favorites fetched successfully',

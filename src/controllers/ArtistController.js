@@ -1,5 +1,7 @@
 const Artist = require("../modals/Artist")
 const { uploadImage } = require("../service/ImageKitService")
+// const { uploadMusic } = require("../service/MusicKitService")
+const bcrypt = require('bcrypt');
 
 const getAllArtist = async (req, res) => {
     try {
@@ -27,29 +29,56 @@ const getArtistBYId = async (req, res) => {
 }
 
 const addArtist = async (req, res) => {
-    const { username, email, name, password, phone } = req.body;
-    if (!req.files || !req.files.music || !req.files.image) {
-        return res.status(400).send({ message: "Music and image files are required" });
-    }
-    const imageupload = await uploadImage(req.files.image[0]);
     try {
+        const { username, email, name, password, phone } = req.body;
+
+        // Validate fields
+        if (!username || !email || !name || !password || !phone) {
+            return res.status(400).send({
+                message: "All fields are required"
+            });
+        }
+
+        // Check files
+        if (!req.files || !req.files.image ) {
+            return res.status(400).send({
+                message: "Image file is required"
+            });
+        }
+
+        // Upload image
+        const imageUpload = await uploadImage(req.files.image[0]);
+
+        // Upload music
+        // const musicUpload = await uploadMusic(req.files.music[0]);
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const artist = new Artist({
             username,
             email,
             name,
-            password,
+            password: hashedPassword,
             phone,
-            image: imageupload.url
-        })
+            image: imageUpload.url,
+            // music: musicUpload.url
+        });
+
         const result = await artist.save();
+
         res.status(201).send({
             message: "Artist added successfully",
             data: result
         });
-    } catch (err) {
-        return res.status(500).send({ message: "Internal Server Error" });
-    }
 
-}
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({
+            message: "Internal Server Error",
+            error: err.message
+        });
+    }
+};
 
 module.exports = { getAllArtist, getArtistBYId, addArtist }
