@@ -8,7 +8,7 @@ const Favorite = require('../modals/Favorite');
 const getAllFavorite = async (req, res) => {
 
     try {
-        
+
         const { userId, playlistId, songId } = req.params;
         const filter = {};
         if (userId) {
@@ -22,8 +22,8 @@ const getAllFavorite = async (req, res) => {
         }
 
         const favorites = await Favorite.find(filter).populate('playlistId', 'name')
-        .populate('songId', 'title artist image audio releaseDate');
-        
+            .populate('songId', 'title artist image audio releaseDate');
+
         res.status(200).send({
             message: 'Favorites fetched successfully',
             data: favorites
@@ -35,20 +35,22 @@ const getAllFavorite = async (req, res) => {
 
 // add to favorite
 const addtoFavorite = async (req, res) => {
+    // console.log("Params:", req.params);
     try {
         const io = req.app.get("io");
-        const { userId, playlistId, songId } = req.params;
+        const { userId, songId } = req.params;
 
-        if (!userId, !playlistId, !songId) {
+        if (!userId ||  !songId) {
             return res.status(400).send({ message: "all fields are required" });
         }
 
         const favorite = new Favorite({
-            userid: userId,
-            playlistId: playlistId,
+            userId: userId,
+            
             songId: songId
         })
         const result = await favorite.save();
+        // await (await result.populate('songId')).populate('playlistId')
         io.emit("newfavoriteSong", result);
         res.status(200).send({
             message: "Added to favorite succelfully",

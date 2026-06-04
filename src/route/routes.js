@@ -30,7 +30,7 @@ router.post('/artists', upload.fields([
 
 // favorite routes
 router.get('/favorites', verifytoken, FavoriteController.getAllFavorite);
-router.post('/favorites/:userId/:playlistId/:songId', verifytoken, FavoriteController.addtoFavorite);
+router.post('/favorites/:userId/:songId', verifytoken, FavoriteController.addtoFavorite);
 router.delete('/favorites/:favoriteId', verifytoken, FavoriteController.removeFromFavorite);
 
 
