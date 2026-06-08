@@ -52,7 +52,8 @@ router.delete('/playlists/:playlistId', PlaylistController.deletePlaylist);
 router.get('/song', SongController.getAllSong);
 router.get('/song/:songId', SongController.getSongById);
 router.post('/song/:aristId', upload.fields([
-    { name: 'image', maxCount: 1 }
+    { name: 'image', maxCount: 1 },
+    { name: 'music', maxCount: 1 }
 ]), SongController.createSong);
 router.delete('/song/:songId', SongController.deleteSong);
 router.get('/search', SongController.searchSong)

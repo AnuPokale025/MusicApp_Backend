@@ -9,19 +9,20 @@ const getAllFavorite = async (req, res) => {
 
     try {
 
-        const { userId, playlistId, songId } = req.params;
-        const filter = {};
-        if (userId) {
-            filter.userId = userId;
-        }
-        if (playlistId) {
-            filter.playlistId = playlistId;
-        }
-        if (songId) {
-            filter.songId = songId;
+        // Only return favorites for the authenticated user
+        const loggedInUserId = req.user && req.user.id;
+        if (!loggedInUserId) {
+            return res.status(401).send({ message: 'Unauthorized' });
         }
 
-        const favorites = await Favorite.find(filter).populate('playlistId', 'name')
+        // allow optional filtering by songId or playlistId via query params
+        const { playlistId, songId } = req.query || {};
+        const filter = { userId: loggedInUserId };
+        if (playlistId) filter.playlistId = playlistId;
+        if (songId) filter.songId = songId;
+
+        const favorites = await Favorite.find(filter)
+            .populate('playlistId', 'name')
             .populate('songId', 'title artist image audio releaseDate');
 
         res.status(200).send({
@@ -38,17 +39,15 @@ const addtoFavorite = async (req, res) => {
     // console.log("Params:", req.params);
     try {
         const io = req.app.get("io");
-        const { userId, songId } = req.params;
+        // Use authenticated user id rather than trusting client-provided userId
+        const loggedInUserId = req.user && req.user.id;
+        const { songId } = req.params;
 
-        if (!userId ||  !songId) {
+        if (!loggedInUserId || !songId) {
             return res.status(400).send({ message: "all fields are required" });
         }
 
-        const favorite = new Favorite({
-            userId: userId,
-            
-            songId: songId
-        })
+        const favorite = new Favorite({ userId: loggedInUserId, songId: songId });
         const result = await favorite.save();
         // await (await result.populate('songId')).populate('playlistId')
         io.emit("newfavoriteSong", result);
@@ -64,11 +63,22 @@ const removeFromFavorite = async (req, res) => {
     try {
         const { favoriteId } = req.params;
 
-        const favorite = await Favorite.deleteOne({ _id: favoriteId });
-        return res.status(200).send({
-            message: "Removed from Favorite successfully",
-            data: favorite
-        })
+        const loggedInUserId = req.user && req.user.id;
+        if (!loggedInUserId) {
+            return res.status(401).send({ message: 'Unauthorized' });
+        }
+
+        const favorite = await Favorite.findById(favoriteId);
+        if (!favorite) {
+            return res.status(404).send({ message: 'Favorite not found' });
+        }
+
+        if (favorite.userId.toString() !== loggedInUserId.toString()) {
+            return res.status(403).send({ message: 'Forbidden: cannot remove another user\'s favorite' });
+        }
+
+        await Favorite.deleteOne({ _id: favoriteId });
+        return res.status(200).send({ message: "Removed from Favorite successfully" });
     } catch (error) {
         res.status(500).send({ message: "Internal server error" })
     }
