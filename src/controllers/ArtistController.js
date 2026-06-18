@@ -81,4 +81,8 @@ const addArtist = async (req, res) => {
     }
 };
 
+const searchArtist = async(req, res)=>{
+    
+}
+
 module.exports = { getAllArtist, getArtistBYId, addArtist }

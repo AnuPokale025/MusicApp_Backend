@@ -2,15 +2,15 @@ const User = require('../modals/User');
 const Song = require('../modals/Song');
 const Playlist = require('../modals/Playlist');
 const Favorite = require('../modals/Favorite');
-const {uploadImage} = require ('../service/ImageKitService')
+
 
 //get all playlists
 const getAllPlaylist = async (req, res) => {
     try {
-        const playlist = await Playlist.find()
+        const playlist = await Playlist.find();
         res.status(200).send({
             message: 'Playlist fetched successfully',
-            playlist
+            data: playlist
         })
     } catch (error) {
         return res.status(500).json({ message: 'Internal Server error' });
@@ -35,72 +35,33 @@ const getplaylistById = async (req, res) => {
     }
 }
 
-// create playlist
 const createPlaylist = async (req, res) => {
     try {
-        const { artistId, userId,id,  songId } = req.params;
-        const ownerArtistId = artistId || (id && req.path.includes('/artist/') ? id : undefined);
-        const ownerUserId = userId || (id && req.path.includes('/user/') ? id : undefined);
-        const {name} = req.body;
+        const userId = req.user.id;
+        const { name, songs } = req.body;
 
-        // validation
-        if (!name) {
-            return res.status(400).send({
-                message: "Playlist name is required"
-            });
-        }
-
-        // only one id allowed
-        if ((ownerArtistId && ownerUserId) || (!ownerArtistId && !ownerUserId)) {
-            return res.status(400).send({
-                message: "Provide either adminId or userId"
-            });
-        }
-        if(!req.files || !req.files.image){
-            return res.status(400).send({message: "image feild is required"})
-        }
-
-                const imageupload = await uploadImage(req.files.image[0]);
-
-        // playlist object
-        const playlistData = {
+        let playlist = new Playlist({
             name,
-            songId : songId,
-            image : imageupload.url
-        };
+            userId,
+            songs: songs || [],
+        });
 
-        // assign owner
-        if (ownerArtistId) {
-            playlistData.artistId = ownerArtistId;
-        }
+        await playlist.save();
 
-        if (ownerUserId) {
-            playlistData.userId = ownerUserId;
-        }
+        playlist = await Playlist.findById(playlist._id)
+            .populate("songs", "title artist audio, image");
 
-
-        // save playlist
-        const playlist = new Playlist(playlistData);
-
-        const result = await playlist.save();
-
-        return res.status(201).send({
+        res.status(201).json({
             success: true,
-            message: "Playlist created successfully",
-            data: result
+            data: playlist,
         });
-
-    } catch (error) {
-
-        return res.status(500).send({
+    } catch (err) {
+        res.status(500).json({
             success: false,
-            message: "Internal Server Error",
-            error: error.message
+            message: err.message,
         });
-
     }
 };
-
 const getPlaylistsByOwner = async (req, res) => {
     try {
         const { artistId, userId } = req.params;

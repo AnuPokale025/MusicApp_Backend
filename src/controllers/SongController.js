@@ -1,4 +1,4 @@
-const Admin = require('../modals/Artist');
+const Artist = require('../modals/Artist');
 const Playlist = require('../modals/Playlist');
 const Favorite = require('../modals/Favorite');
 const Song = require('../modals/Song');
@@ -125,6 +125,7 @@ const searchSong = async (req, res) => {
                 { album: { $regex: query, $options: "i" } }
             ]
         });
+        
 
         return res.status(200).send({
             message: "Search results",
